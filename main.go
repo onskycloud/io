@@ -3,11 +3,28 @@ package io
 import (
 	// "fmt"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
-//ReadAll Read all file from path
+//ReadYamlFile Read file from path marshal to an interface
+func ReadYamlFile(path string, result interface{}) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	bytes, err := ioutil.ReadAll(file)
+	if err := yaml.Unmarshal(bytes, result); err != nil {
+		return fmt.Errorf("unable to decode into struct, %v", err)
+	}
+	return nil
+}
+
+//ReadAll Read file from path
 func ReadAll(path string) (string, error) {
 	jsonFile, err := os.Open(path)
 	if err != nil {
@@ -50,7 +67,7 @@ func ReadDir(path string) ([]string, error) {
 	}
 	for i := 0; i < len(files); i++ {
 		f := files[i]
-		result = append(result, path+f.Name())
+		result = append(result, path+"/"+f.Name())
 	}
 
 	return result, nil
